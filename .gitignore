@@ -1,0 +1,10 @@
+.DS_Store
+xcuserdata/
+*.xcuserstate
+DerivedData/
+*.xcworkspace/xcuserdata/
+node_modules/
+dist/
+.env
+.vscode/
+CLAUDE.md
