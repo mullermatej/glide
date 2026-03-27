@@ -9,9 +9,16 @@ import SwiftUI
 
 @main
 struct GlideApp: App {
+    @State private var auth = AuthViewModel()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if auth.isLoggedIn {
+                ContentView()
+                    .environment(auth)
+            } else {
+                AuthView(auth: auth)
+            }
         }
     }
 }
