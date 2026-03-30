@@ -14,8 +14,7 @@ struct GlideApp: App {
     var body: some Scene {
         WindowGroup {
             if auth.isLoggedIn {
-                ContentView()
-                    .environment(auth)
+                GroupListView(auth: auth)
             } else {
                 AuthView(auth: auth)
             }
