@@ -4,6 +4,7 @@ struct GroupListView: View {
     var auth: AuthViewModel
     @State private var vm = GroupViewModel()
     @State private var showCreateSheet = false
+    @State private var showProfileSheet = false
 
     var body: some View {
     
@@ -32,13 +33,27 @@ struct GroupListView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Sign out") {
-                        Task { await auth.signOut() }
+                    Menu {
+                        Button {
+                            showProfileSheet = true
+                        } label: {
+                            Label("Profile", systemImage: "person.circle")
+                        }
+                        Button(role: .destructive) {
+                            Task { await auth.signOut() }
+                        } label: {
+                            Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                        }
+                    } label: {
+                        Image(systemName: "person.circle")
                     }
                 }
             }
             .sheet(isPresented: $showCreateSheet) {
                 CreateGroupView(vm: vm)
+            }
+            .sheet(isPresented: $showProfileSheet) {
+                ProfileView()
             }
             .task {
                 await vm.fetchGroups()
