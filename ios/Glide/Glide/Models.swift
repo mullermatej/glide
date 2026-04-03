@@ -28,8 +28,6 @@ struct TripGroup: Codable, Identifiable {
     }
 }
 
-// GroupMember has a composite PK (group_id, user_id) — no id column in DB.
-// A computed id is provided for SwiftUI Identifiable conformance.
 struct GroupMember: Codable, Identifiable {
     let groupId: UUID
     let userId: UUID
@@ -64,6 +62,35 @@ struct Trip: Codable, Identifiable {
         case startDate = "start_date"
         case endDate = "end_date"
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        createdBy = try container.decodeIfPresent(UUID.self, forKey: .createdBy)
+        groupId = try container.decode(UUID.self, forKey: .groupId)
+        name = try container.decode(String.self, forKey: .name)
+        destination = try container.decodeIfPresent(String.self, forKey: .destination)
+
+        if let raw = try container.decodeIfPresent(String.self, forKey: .startDate) {
+            startDate = Self.dateOnlyFormatter.date(from: raw)
+        } else {
+            startDate = nil
+        }
+        if let raw = try container.decodeIfPresent(String.self, forKey: .endDate) {
+            endDate = Self.dateOnlyFormatter.date(from: raw)
+        } else {
+            endDate = nil
+        }
+    }
+
+    private static let dateOnlyFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f
+    }()
 }
 
 struct Event: Codable, Identifiable {

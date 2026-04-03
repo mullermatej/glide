@@ -5,6 +5,7 @@ struct GroupDetailView: View {
     @State private var tripVM: TripViewModel
     @State private var showCreateTrip = false
     @State private var showInvite = false
+    @State private var showMembers = false
 
     init(group: TripGroup) {
         self.group = group
@@ -16,25 +17,29 @@ struct GroupDetailView: View {
             if tripVM.isLoading && tripVM.trips.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if let error = tripVM.errorMessage {
+                ContentUnavailableView("Failed to load trips", systemImage: "exclamationmark.triangle", description: Text(error))
             } else if tripVM.trips.isEmpty {
                 ContentUnavailableView("No trips yet", systemImage: "airplane", description: Text("Add a trip to start planning."))
             } else {
                 List(tripVM.trips) { trip in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(trip.name)
-                            .fontWeight(.medium)
-                        if let destination = trip.destination {
-                            Text(destination)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                    NavigationLink(destination: TripDetailView(trip: trip)) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(trip.name)
+                                .fontWeight(.medium)
+                            if let destination = trip.destination {
+                                Text(destination)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            if let start = trip.startDate, let end = trip.endDate {
+                                Text("\(start.formatted(date: .abbreviated, time: .omitted)) – \(end.formatted(date: .abbreviated, time: .omitted))")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
                         }
-                        if let start = trip.startDate, let end = trip.endDate {
-                            Text("\(start.formatted(date: .abbreviated, time: .omitted)) – \(end.formatted(date: .abbreviated, time: .omitted))")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                        }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
                 }
             }
         }
@@ -44,6 +49,7 @@ struct GroupDetailView: View {
                 Menu {
                     Button("New Trip") { showCreateTrip = true }
                     Button("Invite Member") { showInvite = true }
+                    NavigationLink("Members", destination: GroupMembersView(groupId: group.id))
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }

@@ -10,6 +10,15 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    HStack {
+                        Spacer()
+                        AvatarView(url: avatarUrl.isEmpty ? nil : avatarUrl, size: 80)
+                        Spacer()
+                    }
+                    .listRowBackground(Color.clear)
+                }
+
                 Section("Display Name") {
                     TextField("Enter your name", text: $displayName)
                         .textContentType(.name)

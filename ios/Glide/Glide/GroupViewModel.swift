@@ -24,6 +24,7 @@ private struct NewGroupMember: Encodable {
 @Observable
 class GroupViewModel {
     var groups: [TripGroup] = []
+    var members: [Profile] = []
     var isLoading = false
     var errorMessage: String? = nil
 
@@ -31,7 +32,6 @@ class GroupViewModel {
         isLoading = true
         errorMessage = nil
         do {
-            // Only fetch groups where the current user is a member
             let userId = try await supabase.auth.session.user.id
             let memberRows: [GroupMember] = try await supabase
                 .from("group_members")
@@ -65,9 +65,6 @@ class GroupViewModel {
         isLoading = true
         errorMessage = nil
         do {
-            // Generate ID client-side so we can insert the member row
-            // without needing to read back the group first (avoids RLS
-            // select-policy blocking the read before membership exists).
             let groupId = UUID()
 
             try await supabase
@@ -95,6 +92,34 @@ class GroupViewModel {
                 .from("group_members")
                 .insert(NewGroupMember(groupId: groupId, userId: userId))
                 .execute()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
+    func fetchMembers(for groupId: UUID) async {
+        isLoading = true
+        errorMessage = nil
+        do {
+            let memberRows: [GroupMember] = try await supabase
+                .from("group_members")
+                .select()
+                .eq("group_id", value: groupId.uuidString)
+                .execute()
+                .value
+            let userIds = memberRows.map(\.userId)
+
+            if userIds.isEmpty {
+                members = []
+            } else {
+                members = try await supabase
+                    .from("profiles")
+                    .select()
+                    .in("id", values: userIds.map(\.uuidString))
+                    .execute()
+                    .value
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
