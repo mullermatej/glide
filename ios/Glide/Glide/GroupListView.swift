@@ -3,6 +3,7 @@ import SwiftUI
 struct GroupListView: View {
     var auth: AuthViewModel
     @State private var vm = GroupViewModel()
+    @State private var profileVM = ProfileViewModel()
     @State private var showCreateSheet = false
     @State private var showProfileSheet = false
 
@@ -45,7 +46,7 @@ struct GroupListView: View {
                             Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
                         }
                     } label: {
-                        Image(systemName: "person.circle")
+                        AvatarView(url: profileVM.profile?.avatarUrl, size: 28)
                     }
                 }
             }
@@ -57,6 +58,7 @@ struct GroupListView: View {
             }
             .task {
                 await vm.fetchGroups()
+                await profileVM.fetchProfile()
             }
         }
     }
