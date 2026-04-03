@@ -72,6 +72,23 @@ class TripViewModel {
         }
         isLoading = false
     }
+
+    // MARK: - Delete
+
+    func deleteTrip(_ trip: Trip) async {
+        errorMessage = nil
+        do {
+            try await supabase
+                .from("trips")
+                .delete()
+                .eq("id", value: trip.id.uuidString)
+                .execute()
+
+            trips.removeAll { $0.id == trip.id }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
 }
 
 // MARK: - Helpers

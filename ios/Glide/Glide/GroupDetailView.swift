@@ -22,23 +22,33 @@ struct GroupDetailView: View {
             } else if tripVM.trips.isEmpty {
                 ContentUnavailableView("No trips yet", systemImage: "airplane", description: Text("Add a trip to start planning."))
             } else {
-                List(tripVM.trips) { trip in
-                    NavigationLink(destination: TripDetailView(trip: trip)) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(trip.name)
-                                .fontWeight(.medium)
-                            if let destination = trip.destination {
-                                Text(destination)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                List {
+                    ForEach(tripVM.trips) { trip in
+                        NavigationLink(destination: TripDetailView(trip: trip)) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(trip.name)
+                                    .fontWeight(.medium)
+                                if let destination = trip.destination {
+                                    Text(destination)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                if let start = trip.startDate, let end = trip.endDate {
+                                    Text("\(start.formatted(date: .abbreviated, time: .omitted)) – \(end.formatted(date: .abbreviated, time: .omitted))")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
                             }
-                            if let start = trip.startDate, let end = trip.endDate {
-                                Text("\(start.formatted(date: .abbreviated, time: .omitted)) – \(end.formatted(date: .abbreviated, time: .omitted))")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
+                            .padding(.vertical, 4)
+                        }
+                    }
+                    .onDelete { offsets in
+                        let tripsToDelete = offsets.map { tripVM.trips[$0] }
+                        Task {
+                            for trip in tripsToDelete {
+                                await tripVM.deleteTrip(trip)
                             }
                         }
-                        .padding(.vertical, 4)
                     }
                 }
             }
