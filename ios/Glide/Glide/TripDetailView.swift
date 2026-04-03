@@ -24,7 +24,14 @@ struct TripDetailView: View {
         }
         .navigationTitle(trip.name)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                ShareLink(
+                    item: URL(string: "glide://invite/\(trip.groupId.uuidString)")!,
+                    subject: Text(trip.name),
+                    message: Text("Join my trip \"\(trip.name)\" on Glide!")
+                ) {
+                    Image(systemName: "square.and.arrow.up")
+                }
                 Button {
                     showCreateEvent = true
                 } label: {
