@@ -93,6 +93,26 @@ struct Trip: Codable, Identifiable {
     }()
 }
 
+struct Ticket: Codable, Identifiable {
+    let id: UUID
+    let createdAt: Date
+    let uploadedBy: UUID?
+    let tripId: UUID
+    var fileName: String
+    var fileUrl: String?
+    var category: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case createdAt = "created_at"
+        case uploadedBy = "uploaded_by"
+        case tripId = "trip_id"
+        case fileName = "file_name"
+        case fileUrl = "file_url"
+        case category
+    }
+}
+
 struct Event: Codable, Identifiable {
     let id: UUID
     let createdAt: Date

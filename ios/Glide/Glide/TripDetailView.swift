@@ -18,6 +18,7 @@ struct TripDetailView: View {
             } else {
                 List {
                     tripInfoSection
+                    ticketsSection
                     eventsSection
                 }
             }
@@ -56,6 +57,14 @@ struct TripDetailView: View {
                 LabeledContent("Dates") {
                     Text("\(start.formatted(date: .abbreviated, time: .omitted)) – \(end.formatted(date: .abbreviated, time: .omitted))")
                 }
+            }
+        }
+    }
+
+    private var ticketsSection: some View {
+        Section {
+            NavigationLink(destination: TicketsView(tripId: trip.id)) {
+                Label("Tickets", systemImage: "doc.text")
             }
         }
     }
