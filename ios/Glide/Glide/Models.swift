@@ -113,6 +113,28 @@ struct Ticket: Codable, Identifiable {
     }
 }
 
+struct BrainstormIdea: Codable, Identifiable {
+    let id: UUID
+    let createdAt: Date
+    let createdBy: UUID?
+    let tripId: UUID
+    var text: String
+    var xPos: Double
+    var yPos: Double
+    var color: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case createdAt = "created_at"
+        case createdBy = "created_by"
+        case tripId = "trip_id"
+        case text
+        case xPos = "x_pos"
+        case yPos = "y_pos"
+        case color
+    }
+}
+
 struct Event: Codable, Identifiable {
     let id: UUID
     let createdAt: Date
