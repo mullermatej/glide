@@ -31,6 +31,62 @@ class TicketViewModel {
         isLoading = false
     }
 
+    func uploadTicket(fileName: String, fileData: Data, category: String?) async {
+        guard let userId = try? await supabase.auth.session.user.id else {
+            errorMessage = "Not logged in"
+            return
+        }
+        isLoading = true
+        errorMessage = nil
+        do {
+            let path = "\(tripId.uuidString)/\(UUID().uuidString)_\(fileName)"
+
+            try await supabase.storage
+                .from("tickets")
+                .upload(path: path, file: fileData)
+
+            let fileUrl = try supabase.storage
+                .from("tickets")
+                .getPublicURL(path: path)
+                .absoluteString
+
+            var payload: [String: String] = [
+                "trip_id": tripId.uuidString,
+                "uploaded_by": userId.uuidString,
+                "file_name": fileName,
+                "file_url": path
+            ]
+            if let category, !category.isEmpty {
+                payload["category"] = category
+            }
+
+            let newTicket: Ticket = try await supabase
+                .from("tickets")
+                .insert(payload)
+                .select()
+                .single()
+                .execute()
+                .value
+
+            tickets.append(newTicket)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
+    func signedURL(for ticket: Ticket) async -> URL? {
+        guard let path = ticket.fileUrl else { return nil }
+        do {
+            return try await supabase.storage
+                .from("tickets")
+                .createSignedURL(path: path, expiresIn: 3600)
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
     func deleteTicket(_ ticket: Ticket) async {
         errorMessage = nil
         do {

@@ -3,6 +3,7 @@ import SwiftUI
 struct TicketsView: View {
     var tripId: UUID
     @State private var ticketVM: TicketViewModel
+    @State private var showAddTicket = false
 
     init(tripId: UUID) {
         self.tripId = tripId
@@ -21,22 +22,24 @@ struct TicketsView: View {
             } else {
                 List {
                     ForEach(ticketVM.tickets) { ticket in
-                        HStack(spacing: 12) {
-                            Image(systemName: iconForCategory(ticket.category))
-                                .font(.title3)
-                                .foregroundStyle(.secondary)
-                                .frame(width: 28)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(ticket.fileName)
-                                    .fontWeight(.medium)
-                                if let category = ticket.category {
-                                    Text(category.replacingOccurrences(of: "_", with: " ").capitalized)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                        NavigationLink(destination: TicketDetailView(ticket: ticket, vm: ticketVM)) {
+                            HStack(spacing: 12) {
+                                Image(systemName: iconForCategory(ticket.category))
+                                    .font(.title3)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 28)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(ticket.fileName)
+                                        .fontWeight(.medium)
+                                    if let category = ticket.category {
+                                        Text(category.replacingOccurrences(of: "_", with: " ").capitalized)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
                             }
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
                     }
                     .onDelete { offsets in
                         let toDelete = offsets.map { ticketVM.tickets[$0] }
@@ -50,6 +53,18 @@ struct TicketsView: View {
             }
         }
         .navigationTitle("Tickets")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showAddTicket = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddTicket) {
+            AddTicketView(vm: ticketVM)
+        }
         .task {
             await ticketVM.fetchTickets()
         }
