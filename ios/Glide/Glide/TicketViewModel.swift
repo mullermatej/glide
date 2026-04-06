@@ -5,6 +5,7 @@ import Supabase
 @Observable
 class TicketViewModel {
     var tickets: [Ticket] = []
+    var thumbnailURLs: [UUID: URL] = [:]
     var isLoading = false
     var errorMessage: String? = nil
 
@@ -29,6 +30,21 @@ class TicketViewModel {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+        await fetchThumbnailURLs()
+    }
+
+    func fetchThumbnailURLs() async {
+        let imageTickets = tickets.filter { Self.isImage($0.fileName) && $0.fileUrl != nil }
+        for ticket in imageTickets where thumbnailURLs[ticket.id] == nil {
+            if let url = await signedURL(for: ticket) {
+                thumbnailURLs[ticket.id] = url
+            }
+        }
+    }
+
+    static func isImage(_ fileName: String) -> Bool {
+        let ext = fileName.lowercased()
+        return ext.hasSuffix(".jpg") || ext.hasSuffix(".jpeg") || ext.hasSuffix(".png") || ext.hasSuffix(".heic") || ext.hasSuffix(".webp")
     }
 
     func uploadTicket(fileName: String, fileData: Data, category: String?) async {
@@ -69,6 +85,9 @@ class TicketViewModel {
                 .value
 
             tickets.append(newTicket)
+            if Self.isImage(fileName), let url = await signedURL(for: newTicket) {
+                thumbnailURLs[newTicket.id] = url
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

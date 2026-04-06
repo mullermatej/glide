@@ -24,10 +24,29 @@ struct TicketsView: View {
                     ForEach(ticketVM.tickets) { ticket in
                         NavigationLink(destination: TicketDetailView(ticket: ticket, vm: ticketVM)) {
                             HStack(spacing: 12) {
-                                Image(systemName: iconForCategory(ticket.category))
-                                    .font(.title3)
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 28)
+                                if let url = ticketVM.thumbnailURLs[ticket.id] {
+                                    AsyncImage(url: url) { phase in
+                                        switch phase {
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                        case .failure:
+                                            Image(systemName: iconForCategory(ticket.category))
+                                                .font(.title3)
+                                                .foregroundStyle(.secondary)
+                                        default:
+                                            ProgressView()
+                                        }
+                                    }
+                                    .frame(width: 44, height: 44)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                } else {
+                                    Image(systemName: iconForCategory(ticket.category))
+                                        .font(.title3)
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 44, height: 44)
+                                }
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(ticket.fileName)
                                         .fontWeight(.medium)
