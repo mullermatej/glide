@@ -94,6 +94,7 @@ struct AddTicketView: View {
                     if let data = try? Data(contentsOf: url) {
                         fileData = data
                         fileName = url.lastPathComponent
+                        category = Self.guessCategory(from: fileName)
                     }
                 case .failure(let error):
                     vm.errorMessage = error.localizedDescription
@@ -108,5 +109,22 @@ struct AddTicketView: View {
                 }
             }
         }
+    }
+
+    private static func guessCategory(from name: String) -> String {
+        let lower = name.lowercased()
+        let rules: [(keywords: [String], category: String)] = [
+            (["boarding", "flight", "airline", "airways", "flyg"], "boarding_pass"),
+            (["hotel", "booking", "airbnb", "hostel", "resort", "accommodation", "reservation"], "hotel"),
+            (["restaurant", "dinner", "lunch", "cafe", "food", "bistro"], "restaurant"),
+            (["uber", "taxi", "train", "bus", "transfer", "car", "rental", "lyft"], "transport"),
+            (["ticket", "tour", "museum", "excursion", "activity", "pass", "entry"], "activity"),
+        ]
+        for rule in rules {
+            if rule.keywords.contains(where: { lower.contains($0) }) {
+                return rule.category
+            }
+        }
+        return ""
     }
 }
