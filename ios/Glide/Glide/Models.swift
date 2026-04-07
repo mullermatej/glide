@@ -135,6 +135,28 @@ struct BrainstormIdea: Codable, Identifiable {
     }
 }
 
+struct Expense: Codable, Identifiable {
+    let id: UUID
+    let createdAt: Date
+    let paidBy: UUID
+    let tripId: UUID
+    var amount: Double
+    var currency: String
+    var description: String
+    var category: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case createdAt = "created_at"
+        case paidBy = "paid_by"
+        case tripId = "trip_id"
+        case amount
+        case currency
+        case description
+        case category
+    }
+}
+
 struct Event: Codable, Identifiable {
     let id: UUID
     let createdAt: Date

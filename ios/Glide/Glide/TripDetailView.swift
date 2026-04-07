@@ -69,6 +69,9 @@ struct TripDetailView: View {
             NavigationLink(destination: BrainstormCanvasView(tripId: trip.id)) {
                 Label("Brainstorm", systemImage: "lightbulb")
             }
+            NavigationLink(destination: ExpensesView(tripId: trip.id)) {
+                Label("Expenses", systemImage: "creditcard")
+            }
         }
     }
 
