@@ -144,6 +144,9 @@ struct Expense: Codable, Identifiable {
     var currency: String
     var description: String
     var category: String?
+    var latitude: Double?
+    var longitude: Double?
+    var locationName: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -154,6 +157,9 @@ struct Expense: Codable, Identifiable {
         case currency
         case description
         case category
+        case latitude
+        case longitude
+        case locationName = "location_name"
     }
 }
 

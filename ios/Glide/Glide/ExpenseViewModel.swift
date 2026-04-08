@@ -45,7 +45,7 @@ class ExpenseViewModel {
         isLoading = false
     }
 
-    func addExpense(amount: Double, currency: String, description: String, category: String?) async {
+    func addExpense(amount: Double, currency: String, description: String, category: String?, latitude: Double?, longitude: Double?, locationName: String?) async {
         guard let userId = try? await supabase.auth.session.user.id else {
             errorMessage = "Not logged in"
             return
@@ -62,6 +62,15 @@ class ExpenseViewModel {
             ]
             if let category, !category.isEmpty {
                 payload["category"] = category
+            }
+            if let latitude {
+                payload["latitude"] = String(latitude)
+            }
+            if let longitude {
+                payload["longitude"] = String(longitude)
+            }
+            if let locationName, !locationName.isEmpty {
+                payload["location_name"] = locationName
             }
 
             let newExpense: Expense = try await supabase

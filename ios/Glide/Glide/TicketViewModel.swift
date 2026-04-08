@@ -59,12 +59,7 @@ class TicketViewModel {
 
             try await supabase.storage
                 .from("tickets")
-                .upload(path: path, file: fileData)
-
-            let fileUrl = try supabase.storage
-                .from("tickets")
-                .getPublicURL(path: path)
-                .absoluteString
+                .upload(path, data: fileData)
 
             var payload: [String: String] = [
                 "trip_id": tripId.uuidString,

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 
 struct AddExpenseView: View {
     var vm: ExpenseViewModel
@@ -8,9 +9,9 @@ struct AddExpenseView: View {
     @State private var currency = "EUR"
     @State private var description = ""
     @State private var category = ""
+    @State private var locationManager = LocationManager()
 
     private let currencies = ["EUR", "USD", "GBP", "HRK", "CHF", "JPY", "AUD", "CAD"]
-    private let categories = ["", "food", "transport", "accommodation", "activities", "shopping", "other"]
 
     var body: some View {
         NavigationStack {
@@ -40,6 +41,36 @@ struct AddExpenseView: View {
                     }
                 }
 
+                Section("Location") {
+                    switch locationManager.authorizationStatus {
+                    case .notDetermined:
+                        Button("Enable Location") {
+                            locationManager.requestPermission()
+                        }
+                    case .denied, .restricted:
+                        Label("Location access denied", systemImage: "location.slash")
+                            .foregroundStyle(.secondary)
+                    default:
+                        if locationManager.isResolving {
+                            HStack {
+                                ProgressView()
+                                Text("Getting location...")
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else if let name = locationManager.locationName {
+                            Label(name, systemImage: "location.fill")
+                        } else if locationManager.currentLocation != nil {
+                            Label("Location found", systemImage: "location.fill")
+                        } else {
+                            HStack {
+                                ProgressView()
+                                Text("Waiting for location...")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
                 if let error = vm.errorMessage {
                     Section {
                         Text(error)
@@ -65,12 +96,20 @@ struct AddExpenseView: View {
                                 amount: parsed,
                                 currency: currency,
                                 description: description,
-                                category: category.isEmpty ? nil : category
+                                category: category.isEmpty ? nil : category,
+                                latitude: locationManager.currentLocation?.coordinate.latitude,
+                                longitude: locationManager.currentLocation?.coordinate.longitude,
+                                locationName: locationManager.locationName
                             )
                             if vm.errorMessage == nil { dismiss() }
                         }
                     }
                     .disabled(description.trimmingCharacters(in: .whitespaces).isEmpty || amount.isEmpty || vm.isLoading)
+                }
+            }
+            .onAppear {
+                if locationManager.authorizationStatus == .authorizedWhenInUse || locationManager.authorizationStatus == .authorizedAlways {
+                    locationManager.requestLocation()
                 }
             }
         }
