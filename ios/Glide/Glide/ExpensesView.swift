@@ -33,24 +33,29 @@ struct ExpensesView: View {
 
                     Section {
                         ForEach(vm.expenses) { expense in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(expense.description)
-                                        .fontWeight(.medium)
-                                    Text(vm.payerNames[expense.paidBy] ?? "Unknown")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                    if let category = expense.category {
-                                        Text(category.capitalized)
-                                            .font(.caption2)
-                                            .foregroundStyle(.tertiary)
+                            NavigationLink(destination: ExpenseDetailView(
+                                expense: expense,
+                                payerName: vm.payerNames[expense.paidBy] ?? "Unknown"
+                            )) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(expense.description)
+                                            .fontWeight(.medium)
+                                        Text(vm.payerNames[expense.paidBy] ?? "Unknown")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        if let category = expense.category {
+                                            Text(category.capitalized)
+                                                .font(.caption2)
+                                                .foregroundStyle(.tertiary)
+                                        }
                                     }
+                                    Spacer()
+                                    Text(String(format: "%.2f %@", expense.amount, expense.currency))
+                                        .fontWeight(.medium)
                                 }
-                                Spacer()
-                                Text(String(format: "%.2f %@", expense.amount, expense.currency))
-                                    .fontWeight(.medium)
+                                .padding(.vertical, 4)
                             }
-                            .padding(.vertical, 4)
                         }
                         .onDelete { offsets in
                             let toDelete = offsets.map { vm.expenses[$0] }
