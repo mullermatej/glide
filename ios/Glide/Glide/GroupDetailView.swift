@@ -1,15 +1,27 @@
 import SwiftUI
+import Supabase
 
 struct GroupDetailView: View {
     var group: TripGroup
+    var groupVM: GroupViewModel
+    @Environment(\.dismiss) private var dismiss
     @State private var tripVM: TripViewModel
     @State private var showCreateTrip = false
     @State private var showInvite = false
     @State private var showMembers = false
+    @State private var showLeaveConfirm = false
+    @State private var showOwnerDeleteConfirm = false
+    @State private var currentUserId: UUID?
 
-    init(group: TripGroup) {
+    init(group: TripGroup, groupVM: GroupViewModel) {
         self.group = group
+        self.groupVM = groupVM
         _tripVM = State(initialValue: TripViewModel(groupId: group.id))
+    }
+
+    private var isOwner: Bool {
+        guard let currentUserId else { return false }
+        return group.createdBy == currentUserId
     }
 
     var body: some View {
@@ -60,6 +72,13 @@ struct GroupDetailView: View {
                     Button("New Trip") { showCreateTrip = true }
                     Button("Invite Member") { showInvite = true }
                     NavigationLink("Members", destination: GroupMembersView(groupId: group.id))
+                    Button("Leave Group", role: .destructive) {
+                        if isOwner {
+                            showOwnerDeleteConfirm = true
+                        } else {
+                            showLeaveConfirm = true
+                        }
+                    }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
@@ -71,7 +90,30 @@ struct GroupDetailView: View {
         .sheet(isPresented: $showInvite) {
             InviteMemberView(vm: GroupViewModel(), groupId: group.id)
         }
+        .alert("Leave \(group.name)?", isPresented: $showLeaveConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Leave", role: .destructive) {
+                Task {
+                    await groupVM.leaveGroup(group.id)
+                    if groupVM.errorMessage == nil { dismiss() }
+                }
+            }
+        } message: {
+            Text("You won't see this group anymore, and other members won't see you.")
+        }
+        .alert("Delete \(group.name)?", isPresented: $showOwnerDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete Group", role: .destructive) {
+                Task {
+                    await groupVM.deleteGroup(group.id)
+                    if groupVM.errorMessage == nil { dismiss() }
+                }
+            }
+        } message: {
+            Text("You're the group owner. Leaving will delete the group and all its trips, tickets, expenses, and brainstorm ideas. Every member will lose access.")
+        }
         .task {
+            currentUserId = try? await supabase.auth.session.user.id
             await tripVM.fetchTrips()
         }
     }

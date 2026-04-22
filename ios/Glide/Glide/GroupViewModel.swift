@@ -84,6 +84,52 @@ class GroupViewModel {
         isLoading = false
     }
 
+    func leaveGroup(_ groupId: UUID) async {
+        isLoading = true
+        errorMessage = nil
+        do {
+            let userId = try await supabase.auth.session.user.id
+            let removed: [GroupMember] = try await supabase
+                .from("group_members")
+                .delete()
+                .eq("group_id", value: groupId.uuidString)
+                .eq("user_id", value: userId.uuidString)
+                .select()
+                .execute()
+                .value
+            if removed.isEmpty {
+                errorMessage = "Couldn't leave the group. Check database permissions."
+            } else {
+                groups.removeAll { $0.id == groupId }
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
+    func deleteGroup(_ groupId: UUID) async {
+        isLoading = true
+        errorMessage = nil
+        do {
+            let removed: [TripGroup] = try await supabase
+                .from("groups")
+                .delete()
+                .eq("id", value: groupId.uuidString)
+                .select()
+                .execute()
+                .value
+            if removed.isEmpty {
+                errorMessage = "Couldn't delete the group. Check database permissions."
+            } else {
+                groups.removeAll { $0.id == groupId }
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
     func inviteMember(to groupId: UUID, userId: UUID) async {
         isLoading = true
         errorMessage = nil

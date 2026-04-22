@@ -18,7 +18,7 @@ struct GroupListView: View {
                     ContentUnavailableView("No groups yet", systemImage: "person.3", description: Text("Create a group to start planning trips."))
                 } else {
                     List(vm.groups) { group in
-                        NavigationLink(destination: GroupDetailView(group: group)) {
+                        NavigationLink(destination: GroupDetailView(group: group, groupVM: vm)) {
                             Text(group.name)
                         }
                     }
