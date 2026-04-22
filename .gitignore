@@ -7,5 +7,6 @@ node_modules/
 dist/
 .env
 .vscode/
+.claude/
 CLAUDE.md
 PrijedlogTeme.pdf
